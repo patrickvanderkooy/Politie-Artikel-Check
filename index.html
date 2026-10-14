@@ -4,11 +4,404 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Politie Wetboeken, Stroomdiagrammen & PSI Examen Assistent</title>
+    <!-- PWA / App Manifest instellingen -->
     <meta name="theme-color" content="#1a365d">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="manifest" href="manifest.json">
-    <link rel="stylesheet" href="css/style.css">
+    <meta name="apple-mobile-web-app-title" content="Politie PSI">
+    <link rel="manifest" href="data:application/manifest+json;charset=utf-8,{
+      %22name%22: %22Politie Wetboeken, Stroomdiagrammen & Examen PSI%22,
+      %22short_name%22: %22Politie PSI%22,
+      %22start_url%22: %22.%22,
+      %22display%22: %22standalone%22,
+      %22background_color%22: %22#f7fafc%22,
+      %22theme_color%22: %22#1a365d%22
+    }">
+    <style>
+        :root {
+            --primary: #1a365d;
+            --secondary: #2b6cb0;
+            --accent: #3182ce;
+            --bg: #f7fafc;
+            --card-bg: #ffffff;
+            --text: #2d3748;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .install-banner {
+            background: #2b6cb0;
+            color: white;
+            padding: 0.8rem 1rem;
+            text-align: center;
+            font-size: 0.9rem;
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .install-banner button {
+            background: white;
+            color: #2b6cb0;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1.2rem 1rem;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.3rem;
+        }
+
+        header p {
+            margin: 0.4rem 0 0 0;
+            font-size: 0.85rem;
+            opacity: 0.85;
+        }
+
+        nav {
+            display: flex;
+            background: #2c5282;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        nav button {
+            background: none;
+            border: none;
+            color: white;
+            padding: 0.7rem 0.8rem;
+            font-size: 0.85rem;
+            font-weight: bold;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        nav button.active {
+            border-bottom: 3px solid #63b3ed;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .container {
+            max-width: 950px;
+            margin: 1.5rem auto;
+            padding: 0 1rem;
+            width: 100%;
+            box-sizing: border-box;
+            flex: 1;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 1.2rem;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 0.9rem 1rem 0.9rem 2.8rem;
+            font-size: 1rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            outline: none;
+            box-sizing: border-box;
+            background: white;
+        }
+
+        .search-box svg {
+            position: absolute;
+            left: 0.9rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 18px;
+            height: 18px;
+            fill: #a0aec0;
+        }
+
+        .filters {
+            display: flex;
+            gap: 0.4rem;
+            margin-bottom: 1.2rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: white;
+            border: 1px solid var(--border);
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .filter-btn.active {
+            background: var(--secondary);
+            color: white;
+            border-color: var(--secondary);
+        }
+
+        .card, .exam-card, .schedule-card, .flow-card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 1.2rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+            position: relative;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.75rem;
+            gap: 0.8rem;
+        }
+
+        .article-title, .exam-card h3, .schedule-card h3, .flow-card h3 {
+            font-size: 1.05rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 0;
+        }
+
+        .badges {
+            display: flex;
+            gap: 0.3rem;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .badge-matrix { background-color: #c6f6d5; color: #22543d; }
+        .badge-vh { background-color: #e9d8fd; color: #44337a; }
+        .badge-exam { background-color: #feebc8; color: #744210; }
+        .badge-groen { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .badge-vacation { background-color: #fed7d7; color: #742a2a; }
+
+        .fav-btn {
+            background: none;
+            border: none;
+            font-size: 1.3rem;
+            cursor: pointer;
+            color: #cbd5e0;
+            padding: 0;
+            margin-left: 0.5rem;
+        }
+
+        .fav-btn.active { color: #ecc94b; }
+
+        .matrix-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.75rem;
+            margin-top: 0.5rem;
+        }
+
+        @media (min-width: 768px) {
+            .matrix-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .matrix-eis-box {
+            background: #f0fff4;
+            border-left: 3px solid #38a169;
+            color: #22543d;
+            padding: 0.75rem;
+            border-radius: 4px;
+            font-size: 0.88rem;
+            line-height: 1.5;
+            grid-column: 1 / -1;
+        }
+
+        .matrix-text-box {
+            background: #f8fafc;
+            border-left: 3px solid var(--secondary);
+            padding: 0.75rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-family: monospace;
+            white-space: pre-wrap;
+            color: #1a202c;
+        }
+
+        .matrix-explanation-box {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            padding: 0.75rem;
+            border-radius: 4px;
+            font-size: 0.88rem;
+            line-height: 1.5;
+            color: #4a5568;
+            white-space: pre-wrap;
+        }
+
+        .law-link {
+            color: #dd6b20;
+            font-weight: bold;
+            text-decoration: underline;
+            cursor: pointer;
+            background: #fffaf0;
+            padding: 0.1rem 0.3rem;
+            border-radius: 4px;
+            border: 1px solid #feebc8;
+        }
+
+        .law-link:hover {
+            background: #feebc8;
+            color: #c05621;
+        }
+
+        .flow-step {
+            background: #ebf8ff;
+            border: 1px solid #90cdf4;
+            border-left: 4px solid var(--secondary);
+            padding: 0.9rem;
+            border-radius: 6px;
+            margin-bottom: 0.75rem;
+            font-size: 0.92rem;
+            line-height: 1.5;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.6rem;
+            margin-top: 0.6rem;
+            font-size: 0.92rem;
+            background: #f8fafc;
+            padding: 0.5rem;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+        }
+
+        .checklist-item input[type="checkbox"] {
+            margin-top: 0.2rem;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .quiz-container {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .quiz-question {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            line-height: 1.4;
+        }
+
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .quiz-option {
+            background: #f7fafc;
+            border: 2px solid var(--border);
+            padding: 0.8rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            text-align: left;
+            transition: all 0.2s;
+        }
+
+        .quiz-option:hover {
+            border-color: var(--secondary);
+            background: #ebf8ff;
+        }
+
+        .quiz-option.correct {
+            background: #c6f6d5 !important;
+            border-color: #38a169 !important;
+            color: #22543d;
+            font-weight: bold;
+        }
+
+        .quiz-option.wrong {
+            background: #fed7d7 !important;
+            border-color: #e53e3e !important;
+            color: #742a2a;
+        }
+
+        .quiz-feedback {
+            padding: 1rem;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+            display: none;
+            line-height: 1.5;
+        }
+
+        .quiz-btn {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        footer {
+            text-align: center;
+            padding: 1.2rem;
+            font-size: 0.8rem;
+            color: #a0aec0;
+            border-top: 1px solid var(--border);
+            background: white;
+        }
+    </style>
 </head>
 <body>
 
@@ -21,19 +414,20 @@
     </div>
 
     <header>
-        <h1>Politie Wetboeken & PSI Examen Assistent</h1>
-        <p>Volledige Toetsmatrijs (1-op-1 wetteksten & alle leden), Stroomdiagrammen & Rooster</p>
+        <h1>Politie Wetboeken, Stroomdiagrammen & PSI Examen Assistent</h1>
+        <p>Volledige Toetsmatrijs (1-op-1 wetteksten & alle leden), Stroomdiagrammen & Rooster (incl. Herfstvakantie)</p>
     </header>
 
     <nav>
         <button class="nav-btn active" id="btn-articles-tab" onclick="switchTab('articles-tab', this)">Artikelenbank</button>
         <button class="nav-btn" onclick="switchTab('flow-tab', this)">📊 Stroomdiagrammen</button>
-        <button class="nav-btn" onclick="switchTab('exam-tab', this)">🎓 Examens & Rubrics</button>
+        <button class="nav-btn" onclick="switchTab('exam-tab', this)">🎓 Examens & Aanvinkbare Rubrics</button>
         <button class="nav-btn" onclick="switchTab('quiz-tab', this)">Toets Quiz</button>
-        <button class="nav-btn" onclick="switchTab('rooster-tab', this)">📅 Rooster & Vakantie</button>
+        <button class="nav-btn" onclick="switchTab('rooster-tab', this)">📅 Volledig Rooster</button>
     </nav>
 
     <div class="container">
+
         <!-- TAB 1: ARTIKELENENBANK -->
         <div id="articles-tab" class="tab-content active">
             <div class="search-box">
@@ -54,12 +448,71 @@
 
         <!-- TAB 2: STROOMDIAGRAMMEN -->
         <div id="flow-tab" class="tab-content">
-            <div id="flowContainer"></div>
+            <h2 style="color: var(--primary); font-size: 1.25rem; margin-bottom: 0.5rem;">Interactieve Stroomdiagrammen</h2>
+            <p style="color: #64748b; font-size: 0.92rem; margin-bottom: 1.5rem;">Stap-voor-stap beslisbomen voor praktijk en examen.</p>
+
+            <div class="flow-card">
+                <h3>Stroomdiagram 1: Het Aanhoudings- en Vrijheidsbenemingsproces</h3>
+                <div class="flow-step">
+                    <strong>Stap 1: Verdachte & Staandehouding (Sv art. 27 & 52)</strong><br>
+                    Is er sprake van een redelijk vermoeden van schuld? &rarr; <span class="law-link" onclick="searchArticle('52')">Staande houden</span> om identiteit vast te stellen (<span class="law-link" onclick="searchArticle('27a')">Sv art. 27a</span> / <span class="law-link" onclick="searchArticle('8')">Politiewet art. 8</span>).
+                </div>
+                <div class="flow-step">
+                    <strong>Stap 2: Aanhouding (Sv art. 53 of 54)</strong><br>
+                    - Heterdaad? &rarr; Iedereen mag aanhouden (<span class="law-link" onclick="searchArticle('53')">Sv art. 53</span>).<br>
+                    - Buiten heterdaad? &rarr; Uitsluitend politie op bevel van (H)OvJ bij een <span class="law-link" onclick="searchArticle('67')">VH-feit</span> (<span class="law-link" onclick="searchArticle('54')">Sv art. 54</span>).
+                </div>
+                <div class="flow-step">
+                    <strong>Stap 3: Fouillering na aanhouding</strong><br>
+                    - Identificatiefouillering (<span class="law-link" onclick="searchArticle('55b')">Sv art. 55b</span>)<br>
+                    - Veiligheidsfouillering (<span class="law-link" onclick="searchArticle('7')">Politiewet art. 7 lid 3</span>)<br>
+                    - Vervoersfouillering (<span class="law-link" onclick="searchArticle('7')">Politiewet art. 7 lid 4</span>)<br>
+                    - Opsporingsfouillering (<span class="law-link" onclick="searchArticle('56')">Sv art. 56</span>)
+                </div>
+                <div class="flow-step">
+                    <strong>Stap 4: Ophouden voor onderzoek (Sv art. 56a)</strong><br>
+                    Max 9 uur (VH) of 6 uur (geen VH). Nachturen (00:00 - 09:00) tellen niet mee.
+                </div>
+                <div class="flow-step">
+                    <strong>Stap 5: Inverzekeringstelling (I.V.S.) (Sv art. 57 & 58)</strong><br>
+                    Uitsluitend bij <span class="law-link" onclick="searchArticle('67')">VH-feiten</span> door (H)OvJ. Duur: max 3 + 3 = 6 dagen.
+                </div>
+            </div>
         </div>
 
         <!-- TAB 3: EXAMENS & RUBRICS -->
         <div id="exam-tab" class="tab-content">
-            <div id="examContainer"></div>
+            <h2 style="color: var(--primary); font-size: 1.25rem; margin-bottom: 0.5rem;">Examenopdrachten & Aanvinkbare Beoordelingsrubrics (PSI)</h2>
+            <p style="color: #64748b; font-size: 0.92rem; margin-bottom: 1.5rem;">Vink hieronder de onderdelen af die je al volledig beheerst voor je examens.</p>
+
+            <div class="exam-card">
+                <h3>Examenopdracht 1: Rechtmatig Handelen & Strafrechtelijke Grondslagen</h3>
+                <p><strong>Toetsvorm:</strong> Schriftelijke praktijkcasuïstiek & Mondelinge verdediging.</p>
+                <div class="checklist-item"><input type="checkbox" id="ex1_1"><label for="ex1_1">Correcte kwalificatie van strafbare feiten uit de toetsmatrijs (Sr / Sv).</label></div>
+                <div class="checklist-item"><input type="checkbox" id="ex1_2"><label for="ex1_2">Juiste toepassing van proportionaliteit en subsidiariteit bij geweld (Politiewet art. 7).</label></div>
+                <div class="checklist-item"><input type="checkbox" id="ex1_3"><label for="ex1_3">Beheersing van strafuitsluitingsgronden (noodweer, overmacht).</label></div>
+            </div>
+
+            <div class="exam-card">
+                <h3>Examenopdracht 2: Proces-Verbaal & Identiteitsvaststelling</h3>
+                <p><strong>Toetsvorm:</strong> Vaardigheidstoets opstellen PV & ID-controle.</p>
+                <div class="checklist-item"><input type="checkbox" id="ex2_1"><label for="ex2_1">Vlekkeloze vaststelling personalia conform Sv art. 27a.</label></div>
+                <div class="checklist-item"><input type="checkbox" id="ex2_2"><label for="ex2_2">Onderscheid maken tussen eigen waarneming en verklaringen in het PV.</label></div>
+            </div>
+
+            <div class="exam-card">
+                <h3>Examenopdracht 3: Fysieke Vaardigheden & Veiligheidsfouillering</h3>
+                <p><strong>Toetsvorm:</strong> Praktijkexamentraining (Leusden).</p>
+                <div class="checklist-item"><input type="checkbox" id="ex3_1"><label for="ex3_1">Uitvoeren veiligheidsfouillering bij onmiddellijk gevaar (Politiewet art. 7 lid 3).</label></div>
+                <div class="checklist-item"><input type="checkbox" id="ex3_2"><label for="ex3_2">Correcte toepassing vervoersfouillering en handboeiengebruik.</label></div>
+            </div>
+
+            <div class="exam-card">
+                <h3>Examenopdracht 4: Professioneel Handelen & Integriteit</h3>
+                <p><strong>Toetsvorm:</strong> Assessment / praktijkdialogen.</p>
+                <div class="checklist-item"><input type="checkbox" id="ex4_1"><label for="ex4_1">Toepassing van Grondrechten (art. 1, 10, 12) in crisissituaties.</label></div>
+                <div class="checklist-item"><input type="checkbox" id="ex4_2"><label for="ex4_2">Integer handelen conform de Beroepscode voor de Politie.</label></div>
+            </div>
         </div>
 
         <!-- TAB 4: QUIZ -->
@@ -76,22 +529,366 @@
             </div>
         </div>
 
-        <!-- TAB 5: ROOSTER -->
+        <!-- TAB 5: VOLLEDIG ROOSTER (INCL HERFSTVAKANTIE) -->
         <div id="rooster-tab" class="tab-content">
-            <div id="roosterContainer"></div>
+            <h2 style="color: var(--primary); font-size: 1.25rem; margin-bottom: 0.5rem;">Inforooster BPO/LEU/PSI/2639/B</h2>
+            <p style="color: #64748b; font-size: 0.92rem; margin-bottom: 1.5rem;">Volledig overzicht van lesweken in Leusden, lesdagen, de herfstvakantie en examenweken.</p>
+
+            <div class="schedule-card">
+                <div class="card-header">
+                    <div>
+                        <span class="badge badge-exam">Week 39 (21 sep 2026 - 26 sep 2026)</span>
+                        <h3>Start Opleiding & Blok 1 / Blok 3</h3>
+                    </div>
+                </div>
+                <p><strong>Maandag:</strong> Welkom bij PSI opleiding & Blok 1: Werken bij de Nederlandse politie 1.3.<br>
+                <strong>Dinsdag (Online):</strong> Blok 1: Werken bij de Nederlandse Politie 1.2 & Blok 3: Rechtmatig handelen / strafrecht 3.1.</p>
+            </div>
+
+            <div class="schedule-card">
+                <div class="card-header">
+                    <div>
+                        <span class="badge badge-exam">Week 40 (28 sep 2026 - 3 okt 2026)</span>
+                        <h3>Lesweek 2</h3>
+                    </div>
+                </div>
+                <p>Intensive dagen op de Politieacademie in Leusden: Strafvordering, Grondwettelijke kaders en praktijkscenario's aanhouding.</p>
+            </div>
+
+            <div class="schedule-card">
+                <div class="card-header">
+                    <div>
+                        <span class="badge badge-exam">Week 41 (5 okt 2026 - 10 okt 2026)</span>
+                        <h3>Lesweek 3</h3>
+                    </div>
+                </div>
+                <p>Verdieping geweldsbeheersing, Ambtsinstructie, wetgeving Wapens en Munitie en Proces-Verbaal vaardigheden.</p>
+            </div>
+
+            <div class="schedule-card">
+                <div class="card-header">
+                    <div>
+                        <span class="badge badge-exam">Week 42 (12 okt 2026 - 17 okt 2026)</span>
+                        <h3>Lesweek 4</h3>
+                    </div>
+                </div>
+                <p>Voorbereiding praktijktoetsen, verkeerswetgeving en interoperabiliteit met ketenpartners.</p>
+            </div>
+
+            <div class="schedule-card" style="border-left: 4px solid #e53e3e; background: #fff5f5;">
+                <div class="card-header">
+                    <div>
+                        <span class="badge badge-vacation">Herfstvakantie (19 okt 2026 - 24 okt 2026)</span>
+                        <h3>Geen les / Vrij</h3>
+                    </div>
+                </div>
+                <p><strong>Herfstvakantie:</strong> Geen fysieke of online lessen op de Politieacademie. Tijd voor rust en zelfstudie.</p>
+            </div>
+
+            <div class="schedule-card">
+                <div class="card-header">
+                    <div>
+                        <span class="badge badge-exam">Week 44 (26 okt 2026 - 31 okt 2026)</span>
+                        <h3>Lesweek 5</h3>
+                    </div>
+                </div>
+                <p>Hervatting lessen na de herfstvakantie: Verdieping bijzondere wetten, WPG, en scenarioscholing.</p>
+            </div>
+
+            <div class="schedule-card">
+                <div class="card-header">
+                    <div>
+                        <span class="badge badge-exam">Week 45 (2 nov 2026 - 7 nov 2026)</span>
+                        <h3>Lesweek 6</h3>
+                    </div>
+                </div>
+                <p>Eindcoaching en examentraining voor de aankomende praktijk- en theorie-examens.</p>
+            </div>
+
+            <div class="schedule-card" style="border-left: 4px solid #38a169; background: #f0fff4;">
+                <div class="card-header">
+                    <div>
+                        <span class="badge badge-groen">Week 46 (9 nov 2026 - 14 nov 2026)</span>
+                        <h3>Examen Week</h3>
+                    </div>
+                </div>
+                <p><strong>Dinsdag: 🎓 EXAMEN PSI (Examenopdracht 1 t/m 3) & Inzage</strong>.</p>
+            </div>
         </div>
+
     </div>
 
     <footer>
-        Politie Studie Assistent PSI &bull; Modulaire GitHub Versie
+        Politie Studie Assistent PSI &bull; Volledige Toetsmatrijs inclusief Leden, Stroomdiagrammen, Rooster & Examens
     </footer>
 
-    <!-- JavaScript Bestanden (aangepast naar direct laden uit de root of map) -->
-    <script src="database.js"></script>
-    <script src="stroomdiagrammen.js"></script>
-    <script src="examens.js"></script>
-    <script src="rooster.js"></script>
-    <script src="quiz.js"></script>
-    <script src="app.js"></script>
+    <script>
+        // VOLLEDIGE DATABASE VAN ARTIKELEN (1-op-1 uitgeschreven zonder afkortingen)
+        const database = [
+            {
+                id: "gw1", law: "Grondwet", article: "Artikel 1", title: "Gelijkheid & Non-discriminatie", inMatrix: true, vh: false, groen: true,
+                eis: "De student kan in een praktijksituatie herkennen wanneer sprake is van discriminatie en kan aangeven hoe daar volgens de wet mee omgegaan moet worden. (Grondwet, artikel 1) (T)",
+                text: "Allen die zich in Nederland bevinden, worden in gelijke gevallen gelijk behandeld. Discriminatie wegens godsdienst, levensovertuiging, politieke gezindheid, ras, geslacht, handicap, seksuele gerichtheid of op welke grond dan ook, is niet toegestaan.",
+                explanation: "Dit is het gelijkheidsbeginsel. Uitgangspunt is dat gelijke gevallen een gelijke behandeling moeten krijgen.",
+                connection: "Gekoppeld aan Sr art. 44bis en Sr art. 137c."
+            },
+            {
+                id: "gw10_11", law: "Grondwet", article: "Artikel 10 & 11", title: "Eerbiediging persoonlijke levenssfeer & Onaantastbaarheid lichaam", inMatrix: true, vh: false, groen: true,
+                eis: "De student kan in een praktijksituatie bepalen wanneer de politie bij het uitvoeren van haar taken inbreuk mag maken op rechten uit de Grondwet. (Grondwet, artikel 10 en 11) (T)",
+                text: "Art. 10:\n1. Ieder heeft, behoudens bij of krachtens de wet te stellen beperkingen, recht op eerbiediging van zijn persoonlijke levenssfeer.\n2. De wet stelt regels ter bescherming van de persoonlijke levenssfeer in verband met het vastleggen en verstrekken van persoonsgegevens.\n3. De wet stelt regels inzake de aanspraken van personen op kennisneming van over hen vastgelegde gegevens...\n\nArt. 11: Ieder heeft, behoudens bij of krachtens de wet te stellen beperkingen, recht op onaantastbaarheid van zijn lichaam.",
+                explanation: "Bescherming van privacy en lichamelijke integriteit, mits bij wet beperkt.",
+                connection: "WvSv fouilleringsartikelen (Sv art. 55b, Sv art. 56)."
+            },
+            {
+                id: "gw12", law: "Grondwet", article: "Artikel 12", title: "Huisrecht", inMatrix: true, vh: false, groen: true,
+                eis: "De student kan uitleggen onder welke voorwaarden binnentreden in een woning zonder toestemming van de bewoner is toegestaan. (Grondwet, artikel 12) (B)",
+                text: "1. Het binnentreden in een woning zonder toestemming van de bewoner is alleen geoorloofd in de gevallen bij of krachtens de wet bepaald, door hen die daartoe bij of krachtens de wet zijn aangewezen.\n2. Voor het binnentreden zijn voorafgaande legitimatie en mededeling van het doel vereist.\n3. Aan de bewoner wordt zo spoedig mogelijk een schriftelijk verslag verstrekt.",
+                explanation: "Huisrecht beschermt de woning tegen onbevoegde binnentreding.",
+                connection: "Politiewet art. 7 lid 2 & Awbi art. 1, 2, 7, 9."
+            },
+            {
+                id: "pw7_1", law: "Politiewet 2012", article: "Artikel 7 lid 1", title: "Geweldsaanwending", inMatrix: true, vh: false, groen: true,
+                eis: "De student kan in een praktijksituatie beoordelen of het gebruik van geweld of vrijheidsbeperkende middelen door een politieambtenaar rechtmatig is (Politiewet, artikel 7 lid 1) (T)",
+                text: "De ambtenaar van politie die is aangesteld voor de uitvoering van de politietaak, is bevoegd in de rechtmatige uitoefening van zijn bediening geweld of vrijheidsbeperkende middelen te gebruiken, wanneer het daarmee beoogde doel dit, mede gelet op de aan het gebruik hiervan verbonden gevaren, rechtvaardigt en dat doel niet op een andere wijze kan worden bereikt. Aan het gebruik van geweld gaat zo mogelijk een waarschuwing vooraf.",
+                explanation: "Subsidiariteit en proportionaliteit zijn leidend bij elk geweldoptreden.",
+                connection: "Ambtsinstructie art. 4 & Awbi."
+            },
+            {
+                id: "pw8", law: "Politiewet 2012", article: "Artikel 8", title: "Vorderen inzage identiteitsbewijs", inMatrix: true, vh: false, groen: true,
+                eis: "De student kan in een praktijksituatie bepalen of hij inzage van een identiteitsbewijs mag vorderen van personen tijdens de uitvoering van de politietaak. (Politiewet, artikel 8) (T)",
+                text: "1. Een ambtenaar van politie is bevoegd tot het vorderen van inzage van een identiteitsbewijs... voor zover dat redelijkerwijs noodzakelijk is voor de uitvoering van de politietaak.\n2., 3. (Gelijkgestelde bevoegdheden boa's en KMar).",
+                explanation: "Vorderen ID kan bij elke uitoefening van de politietaak (art. 3 Politiewet).",
+                connection: "Wet op de identificatieplicht art. 1 & 2 & Sr art. 447e."
+            },
+            {
+                id: "sr41", law: "Wetboek van Strafrecht", article: "Artikel 41", title: "Noodweer & Noodweerexces", inMatrix: true, vh: true, groen: true,
+                eis: "De student kan in een praktijksituatie bepalen of er sprake is van noodweer en noodweerexces. (Sr, artikel 41) (T)",
+                text: "1. Niet strafbaar is hij die een feit begaat, geboden door de noodzakelijke verdediging van eigen of eens anders lijf, eerbaarheid of goed tegen ogenblikkelijke, wederrechtelijke aanranding.\n2. Niet strafbaar is de overschrijding van de grenzen van noodzakelijke verdediging door hevige gemoedsbeweging.",
+                explanation: "Noodweer = rechtvaardigingsgrond. Noodweerexces = schulduitsluitingsgrond.",
+                connection: "Sr art. 41."
+            },
+            {
+                id: "sv52", law: "Wetboek van Strafvordering", article: "Artikel 52", title: "Staandehouding", inMatrix: true, vh: false, groen: true,
+                eis: "De student kan benoemen onder welke voorwaarden iemand mag worden staande gehouden. (Sv, artikel 52) (K)",
+                text: "Iedere opsporingsambtenaar is bevoegd de identiteit van de verdachte vast te stellen en hem daartoe staande te houden.",
+                explanation: "Uitsluitend toepasbaar op een verdachte door een opsporingsambtenaar.",
+                connection: "Sv art. 27a."
+            },
+            {
+                id: "sv53_54", law: "Wetboek van Strafvordering", article: "Artikel 53 & 54", title: "Aanhouding (Heterdaad & Buiten heterdaad)", inMatrix: true, vh: false, groen: true,
+                eis: "De student kan benoemen wanneer een verdachte mag worden aangehouden. (Sv, artikel 53 en 54) (K)",
+                text: "Art. 53. Heterdaad: eenieder bevoegd tot aanhouding.\nArt. 54. Buiten heterdaad: opsporingsambtenaar op bevel van (H)OvJ bij VH-feit.",
+                explanation: "Verschil tussen heterdaad (iedereen) en buiten heterdaad (alleen politie op bevel OvJ bij VH-feit).",
+                connection: "Sv art. 67."
+            },
+            {
+                id: "sv67", law: "Wetboek van Strafvordering", article: "Artikel 67", title: "Voorlopige hechtenis", inMatrix: true, vh: true, groen: true,
+                eis: "De student kan beschrijven voor welke strafbare feiten voorlopige hechtenis is toegestaan. (Sv, art. 67) (K)",
+                text: "1. Misdrijven met 4+ jaar gevangenisstraf en in de wet aangewezen specifieke misdrijven (paarse feiten).\n2. Verdachten zonder vaste woon- of verblijfplaats.",
+                explanation: "Grondslag voor inverzekeringstelling, inbewaringstelling en gevangenhouding.",
+                connection: "Sv art. 65, 67a."
+            }
+        ];
+
+        let favorites = JSON.parse(localStorage.getItem('pol_favs') || '[]');
+        let currentFilter = 'all';
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const dismissed = localStorage.getItem('pol_install_dismissed');
+            if (!dismissed) {
+                document.getElementById('installBanner').style.display = 'flex';
+            }
+            renderArticles(database);
+
+            // Herstel aangevinkte checkboxes bij examens
+            document.querySelectorAll('input[type="checkbox"]').forEach(box => {
+                const savedState = localStorage.getItem(box.id);
+                if (savedState === 'true') box.checked = true;
+                box.onchange = () => {
+                    localStorage.setItem(box.id, box.checked);
+                };
+            });
+        });
+
+        function dismissInstallBanner() {
+            localStorage.setItem('pol_install_dismissed', 'true');
+            document.getElementById('installBanner').style.display = 'none';
+        }
+
+        function showInstallHelp() {
+            alert("Om deze app direct op je beginscherm te plaatsen:\n\n- Android (Chrome): Tik rechtsboven op de 3 puntjes (⋮) en kies 'Toevoegen aan startscherm'.\n- iPhone (Safari): Tik onderaan op het deel-icoontje en kies 'Zet op beginscherm'.");
+            dismissInstallBanner();
+        }
+
+        function switchTab(tabId, btn) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            btn.classList.add('active');
+
+            if (tabId === 'quiz-tab') {
+                generateQuestion();
+            }
+        }
+
+        function toggleFav(id, btn) {
+            if (favorites.includes(id)) {
+                favorites = favorites.filter(f => f !== id);
+                btn.classList.remove('active');
+            } else {
+                favorites.push(id);
+                btn.classList.add('active');
+            }
+            localStorage.setItem('pol_favs', JSON.stringify(favorites));
+            if (currentFilter === 'favs') filterArticles();
+        }
+
+        function searchArticle(term) {
+            switchTab('articles-tab', document.getElementById('btn-articles-tab'));
+            document.getElementById('searchInput').value = term;
+            filterArticles();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function formatConnections(connText) {
+            if (!connText) return '';
+            return connText
+                .replace(/Sr art\. (\d+[a-z]*)/gi, '<a class="law-link" onclick="searchArticle(\'$1\')">Sr art. $1</a>')
+                .replace(/Sv art\. (\d+[a-z]*)/gi, '<a class="law-link" onclick="searchArticle(\'$1\')">Sv art. $1</a>')
+                .replace(/art\. (\d+[a-z]*)\b/gi, '<a class="law-link" onclick="searchArticle(\'$1\')">art. $1</a>');
+        }
+
+        function renderArticles(items) {
+            const container = document.getElementById('articlesContainer');
+            const resultsInfo = document.getElementById('resultsInfo');
+            
+            container.innerHTML = '';
+            resultsInfo.textContent = `${items.length} artikel(en) weergegeven`;
+
+            if (items.length === 0) {
+                container.innerHTML = `<div class="card" style="text-align:center; padding:2rem;">Geen resultaten gevonden.</div>`;
+                return;
+            }
+
+            items.forEach(item => {
+                const isFav = favorites.includes(item.id);
+                const card = document.createElement('div');
+                card.className = 'card';
+
+                let badgesHtml = `<span class="badge badge-matrix">Toetsmatrijs</span>`;
+                if (item.groen) badgesHtml += ` <span class="badge badge-groen">🟢 Recente Toets</span>`;
+                if (item.vh) badgesHtml += ` <span class="badge badge-vh">🟣 VH-feit (Paars)</span>`;
+
+                const formattedConnection = formatConnections(item.connection);
+
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div>
+                            <div style="font-size:0.75rem; font-weight:bold; color:var(--secondary); text-transform:uppercase;">${item.law}</div>
+                            <h3 class="article-title">${item.article}: ${item.title}</h3>
+                        </div>
+                        <div style="display:flex; align-items:center;">
+                            <div class="badges">${badgesHtml}</div>
+                            <button class="fav-btn ${isFav ? 'active' : ''}" onclick="toggleFav('${item.id}', this)">★</button>
+                        </div>
+                    </div>
+                    <div class="matrix-grid">
+                        ${item.eis ? `<div class="matrix-eis-box"><strong>Eis / Leerdoel:</strong><br>${item.eis}</div>` : ''}
+                        <div class="matrix-text-box"><strong>Wetteksten & Leden:</strong><br><br>${item.text}</div>
+                        <div class="matrix-explanation-box"><strong>Toelichting:</strong><br><br>${item.explanation}</div>
+                    </div>
+                    ${item.connection ? `<div style="margin-top: 0.75rem; background: #fffaf0; border: 1px solid #feebc8; border-left: 3px solid #dd6b20; padding: 0.75rem; border-radius: 4px; font-size: 0.88rem; color: #7b341e;"><strong>Wetsverband:</strong> ${formattedConnection}</div>` : ''}
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function filterArticles() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            let filtered = database.filter(item => {
+                const matchesQuery = 
+                    item.article.toLowerCase().includes(query) ||
+                    item.title.toLowerCase().includes(query) ||
+                    item.text.toLowerCase().includes(query) ||
+                    item.explanation.toLowerCase().includes(query) ||
+                    item.law.toLowerCase().includes(query);
+
+                if (!matchesQuery) return false;
+                if (currentFilter === 'groen') return item.groen;
+                if (currentFilter === 'vh') return item.vh;
+                if (currentFilter === 'favs') return favorites.includes(item.id);
+                return true;
+            });
+            renderArticles(filtered);
+        }
+
+        function setFilter(filter, btn) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            filterArticles();
+        }
+
+        // QUIZ LOGICA
+        let currentQuizQuestion = null;
+        let score = 0;
+        let questionCount = 0;
+
+        function generateQuestion() {
+            document.getElementById('quiz-feedback').style.display = 'none';
+            document.getElementById('quiz-next-btn').style.display = 'none';
+
+            const item = database[Math.floor(Math.random() * database.length)];
+            const questionText = `<strong>Toetsvraag:</strong> Welk wetsartikel uit de toetsmatrijs hoort bij het volgende onderwerp / lesdoel?<br><em>"${item.eis || item.title}"</em>`;
+            const correctAnswer = `${item.law} - ${item.article}: ${item.title}`;
+            const wrongPool = database.filter(d => d.id !== item.id).map(o => `${o.law} - ${o.article}: ${o.title}`);
+            const allOptions = [correctAnswer, ...wrongPool.slice(0, 3)].sort(() => Math.random() - 0.5);
+
+            currentQuizQuestion = {
+                correct: correctAnswer,
+                explanation: item.explanation
+            };
+
+            questionCount++;
+            document.getElementById('quiz-counter').textContent = `Examen Vraag #${questionCount}`;
+            document.getElementById('quiz-question').innerHTML = questionText;
+
+            const optionsContainer = document.getElementById('quiz-options');
+            optionsContainer.innerHTML = '';
+
+            allOptions.forEach(opt => {
+                let btn = document.createElement('button');
+                btn.className = 'quiz-option';
+                btn.innerHTML = opt;
+                btn.onclick = () => checkAnswer(opt, btn);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selectedOpt, btnElement) {
+            const allBtns = document.querySelectorAll('.quiz-option');
+            allBtns.forEach(b => b.onclick = null);
+
+            const feedback = document.getElementById('quiz-feedback');
+            feedback.style.display = 'block';
+
+            if (selectedOpt === currentQuizQuestion.correct) {
+                btnElement.classList.add('correct');
+                feedback.style.background = '#c6f6d5';
+                feedback.style.color = '#22543d';
+                feedback.innerHTML = `<strong>Juist! 🎉</strong><br><br>${currentQuizQuestion.explanation}`;
+                score++;
+            } else {
+                btnElement.classList.add('wrong');
+                feedback.style.background = '#fed7d7';
+                feedback.style.color = '#742a2a';
+                feedback.innerHTML = `<strong>Onjuist.</strong> Juiste antwoord: <strong>${currentQuizQuestion.correct}</strong>.<br><br>${currentQuizQuestion.explanation}`;
+                allBtns.forEach(b => { if (b.innerHTML === currentQuizQuestion.correct) b.classList.add('correct'); });
+            }
+
+            document.getElementById('quiz-score').textContent = `Score: ${score} van de ${questionCount}`;
+            document.getElementById('quiz-next-btn').style.display = 'inline-block';
+        }
+    </script>
 </body>
 </html>
