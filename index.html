@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Politie Wetboeken, Stroomdiagrammen & PSI Examen Assistent</title>
+    <meta name="theme-color" content="#1a365d">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <div class="install-banner" id="installBanner">
+        <span>📲 Wil je deze app als icoontje op je startscherm?</span>
+        <div>
+            <button onclick="showInstallHelp()" style="margin-right: 5px;">Installeren</button>
+            <button onclick="dismissInstallBanner()" style="background: transparent; border: 1px solid white; color: white;">Sluiten</button>
+        </div>
+    </div>
+
+    <header>
+        <h1>Politie Wetboeken & PSI Examen Assistent</h1>
+        <p>Volledige Toetsmatrijs (1-op-1 wetteksten & alle leden), Stroomdiagrammen & Rooster</p>
+    </header>
+
+    <nav>
+        <button class="nav-btn active" id="btn-articles-tab" onclick="switchTab('articles-tab', this)">Artikelenbank</button>
+        <button class="nav-btn" onclick="switchTab('flow-tab', this)">📊 Stroomdiagrammen</button>
+        <button class="nav-btn" onclick="switchTab('exam-tab', this)">🎓 Examens & Rubrics</button>
+        <button class="nav-btn" onclick="switchTab('quiz-tab', this)">Toets Quiz</button>
+        <button class="nav-btn" onclick="switchTab('rooster-tab', this)">📅 Rooster & Vakantie</button>
+    </nav>
+
+    <div class="container">
+        <!-- TAB 1: ARTIKELENENBANK -->
+        <div id="articles-tab" class="tab-content active">
+            <div class="search-box">
+                <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                <input type="text" id="searchInput" placeholder="Zoek op artikel (bijv. '310 Sr', '27a Sv', '1 Grondwet') of trefwoord..." onkeyup="filterArticles()">
+            </div>
+
+            <div class="filters">
+                <button class="filter-btn active" onclick="setFilter('all', this)">Alle Artikelen</button>
+                <button class="filter-btn" onclick="setFilter('groen', this)">🟢 Recente Toetsen (Groen)</button>
+                <button class="filter-btn" onclick="setFilter('vh', this)">🟣 VH-feiten (Paars)</button>
+                <button class="filter-btn" onclick="setFilter('favs', this)">⭐ Favorieten</button>
+            </div>
+
+            <div class="results-info" id="resultsInfo">Laden...</div>
+            <div id="articlesContainer"></div>
+        </div>
+
+        <!-- TAB 2: STROOMDIAGRAMMEN -->
+        <div id="flow-tab" class="tab-content">
+            <div id="flowContainer"></div>
+        </div>
+
+        <!-- TAB 3: EXAMENS & RUBRICS -->
+        <div id="exam-tab" class="tab-content">
+            <div id="examContainer"></div>
+        </div>
+
+        <!-- TAB 4: QUIZ -->
+        <div id="quiz-tab" class="tab-content">
+            <div class="quiz-container">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; color: #718096; font-size: 0.9rem;">
+                    <span id="quiz-counter">Examen Vraag #1</span>
+                    <span id="quiz-score">Score: 0 goed</span>
+                </div>
+                <div class="quiz-question" id="quiz-question">Vraag laden...</div>
+                <div class="quiz-options" id="quiz-options"></div>
+                <div class="quiz-feedback" id="quiz-feedback"></div>
+                <button class="quiz-btn" id="quiz-next-btn" onclick="generateQuestion()" style="display: none;">Volgende Examenvraag →</button>
+            </div>
+        </div>
+
+        <!-- TAB 5: ROOSTER -->
+        <div id="rooster-tab" class="tab-content">
+            <div id="roosterContainer"></div>
+        </div>
+    </div>
+
+    <footer>
+        Politie Studie Assistent PSI &bull; Modulaire GitHub Versie
+    </footer>
+
+    <!-- JavaScript Modules -->
+    <script src="js/database.js"></script>
+    <script src="js/stroomdiagrammen.js"></script>
+    <script src="js/examens.js"></script>
+    <script src="js/rooster.js"></script>
+    <script src="js/quiz.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
