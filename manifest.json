@@ -1,0 +1,8 @@
+{
+  "name": "Politie Wetboeken, Stroomdiagrammen & Examen PSI",
+  "short_name": "Politie PSI",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#f7fafc",
+  "theme_color": "#1a365d"
+}
